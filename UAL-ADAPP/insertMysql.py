@@ -2,7 +2,6 @@ import csv
 import mysql.connector
 from datetime import datetime
 
-# 🔌 Función de conexión general, solo cambia el nombre de la base
 def conectar_mysql(nombre_base):
     return mysql.connector.connect(
         host="localhost",
@@ -11,7 +10,6 @@ def conectar_mysql(nombre_base):
         database=nombre_base
     )
 
-# 👤 Insertar clientes en la base 'crm'
 def insertar_clientes(ruta_csv):
     conn = conectar_mysql("crm")
     cursor = conn.cursor()
@@ -28,9 +26,8 @@ def insertar_clientes(ruta_csv):
     conn.commit()
     cursor.close()
     conn.close()
-    print("✔ Clientes insertados en 'crm'.")
+    print("Clientes insertados en 'crm'.")
 
-# 👤 Insertar usuarios en la base 'dbo'
 def insertar_usuarios(ruta_csv):
     conn = conectar_mysql("dbo")
     cursor = conn.cursor()
