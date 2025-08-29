@@ -157,5 +157,5 @@ params_dict = {
     }
 }
 
-resultados = execute_dynamic_matching(params_dict, score_cutoff=80)
+resultados = execute_dynamic_matching(params_dict, score_cutoff=70)
 print(resultados)

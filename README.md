@@ -44,3 +44,12 @@ Ejecuta un proceso de coincidencia difusa entre tablas de origen y destino.
   - `score_cutoff` (int, opcional): Puntuación mínima para considerar una coincidencia. Por defecto, `0`.
 - **Retorno**:
   - `list[dict]`: Lista de registros con los resultados de las coincidencias.
+
+---
+
+## Cambios realizados
+1. **Centralización de configuración en `conectar_mysql`**  
+   Se implementó un diccionario de configuración (`config`) para evitar repetir los parámetros de conexión en cada llamada. Esto facilita la mantenibilidad del código.  
+
+2. **Uso de `executemany` en inserciones**  
+   Se sustituyó el uso de `cursor.execute()` dentro de un bucle por `cursor.executemany()` para insertar múltiples filas en una sola operación, optimizando el rendimiento en la carga de datos.
