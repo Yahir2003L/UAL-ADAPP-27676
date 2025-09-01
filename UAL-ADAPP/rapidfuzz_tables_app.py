@@ -1,11 +1,11 @@
 from db_fuzzy_match import connect_to_db, fuzzy_match, execute_dynamic_matching
 import pandas as pd
 
-def display_results(results, output_format="dataframe"):
-    if output_format == "dataframe":
+def display_results(results, formato="dataframe"):
+    if formato == "dataframe":
         df = pd.DataFrame(results)
         print(df)
-    elif output_format == "dictionary":
+    elif formato == "dictionary":
         for record in results:
             print(record)
     else:
@@ -28,5 +28,5 @@ params_dict = {
 }
 
 resultados = execute_dynamic_matching(params_dict, score_cutoff=70)
-output_format = input("Elige formato de salida (dataframe/dictionary): ").strip().lower()
-display_results(resultados, output_format= output_format)
+formato = input("Elige formato de salida (dataframe/dictionary): ").strip().lower()
+display_results(resultados, formato= formato)
