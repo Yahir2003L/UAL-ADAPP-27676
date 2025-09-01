@@ -10,7 +10,19 @@ def display_results(results, formato="dataframe"):
             print(record)
     else:
         print("formato invalido. Usa 'dataframe' o 'dictionary'.")
-    
+
+def export_results_to_csv(results):
+    export = input("¿Deseas exportar los resultados a un archivo CSV? (sí/no): ").strip().lower()
+    if export in ["si", "s"]:
+        filename = input("Introduce el nombre del archivo CSV (sin extensión): ").strip()
+        df = pd.DataFrame(results)
+        try:
+            df.to_csv(f"{filename}.csv", index=False, encoding="utf-8")
+            print(f"Resultados exportados exitosamente a '{filename}.csv'.")
+        except Exception as e:
+            print(f"Error al exportar los resultados: {e}")
+    else:
+        print("Exportación cancelada.")
 
 params_dict = {
     "db_type": "mysql",
@@ -29,4 +41,5 @@ params_dict = {
 
 resultados = execute_dynamic_matching(params_dict, score_cutoff=70)
 formato = input("Elige formato de salida (dataframe/dictionary): ").strip().lower()
-display_results(resultados, formato= formato)
+display_results(resultados, formato=formato)
+export_results_to_csv(resultados)
