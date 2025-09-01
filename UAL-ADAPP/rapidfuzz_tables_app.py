@@ -1,4 +1,5 @@
 from db_fuzzy_match import connect_to_db, fuzzy_match, execute_dynamic_matching
+import pandas as pd
 
 params_dict = {
     "db_type": "mysql",
@@ -16,4 +17,5 @@ params_dict = {
 }
 
 resultados = execute_dynamic_matching(params_dict, score_cutoff=70)
-print(resultados)
+df = pd.DataFrame(resultados)
+print(df)
