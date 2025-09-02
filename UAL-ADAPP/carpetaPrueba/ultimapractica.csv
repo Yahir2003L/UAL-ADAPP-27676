@@ -1,0 +1,21 @@
+nombre,email,match_query,match_result,score,match_result_values,sourceTable,destTable
+Janet,janet.norris1@example.com,Janetjanet.norris1@example.com,,0.0,{},Clientes,Usuarios
+Michael,michael.jones2@example.com,Michaelmichael.jones2@example.com,Michelleuser11@example.com,71.1864406779661,"{'first_name': 'Michelle', 'email': 'user11@example.com'}",Clientes,Usuarios
+Donna,donna.nelson3@example.com,Donnadonna.nelson3@example.com,,0.0,{},Clientes,Usuarios
+Gregory,gregory.gross4@example.com,Gregorygregory.gross4@example.com,Gregoryuser74@example.com,75.86206896551724,"{'first_name': 'Gregory', 'email': 'user74@example.com'}",Clientes,Usuarios
+Herbert,herbert.davis5@example.com,Herbertherbert.davis5@example.com,Herbertuser162@example.com,71.1864406779661,"{'first_name': 'Herbert', 'email': 'user162@example.com'}",Clientes,Usuarios
+Danielle,danielle.clarke6@example.com,Danielledanielle.clarke6@example.com,Danielleuser83@example.com,70.96774193548387,"{'first_name': 'Danielle', 'email': 'user83@example.com'}",Clientes,Usuarios
+Christian,christian.martin7@example.com,Christianchristian.martin7@example.com,,0.0,{},Clientes,Usuarios
+Annette,annette.hartman8@example.com,Annetteannette.hartman8@example.com,,0.0,{},Clientes,Usuarios
+Tim,tim.cabrera9@example.com,Timtim.cabrera9@example.com,Michaeluser91@example.com,73.07692307692308,"{'first_name': 'Michael', 'email': 'user91@example.com'}",Clientes,Usuarios
+Catherine,catherine.holmes10@example.com,Catherinecatherine.holmes10@example.com,,0.0,{},Clientes,Usuarios
+Michael,michael.yates11@example.com,Michaelmichael.yates11@example.com,Michelleuser11@example.com,76.66666666666666,"{'first_name': 'Michelle', 'email': 'user11@example.com'}",Clientes,Usuarios
+Bobby,bobby.anderson12@example.com,Bobbybobby.anderson12@example.com,,0.0,{},Clientes,Usuarios
+Leslie,leslie.ball13@example.com,Leslieleslie.ball13@example.com,,0.0,{},Clientes,Usuarios
+Mark,mark.mendoza14@example.com,Markmark.mendoza14@example.com,Amandauser124@example.com,72.72727272727273,"{'first_name': 'Amanda', 'email': 'user124@example.com'}",Clientes,Usuarios
+Sarah,sarah.good15@example.com,Sarahsarah.good15@example.com,Alanuser15@example.com,70.58823529411764,"{'first_name': 'Alan', 'email': 'user15@example.com'}",Clientes,Usuarios
+Anthony,anthony.stanley16@example.com,Anthonyanthony.stanley16@example.com,,0.0,{},Clientes,Usuarios
+Katherine,katherine.stephenson17@example.com,Katherinekatherine.stephenson17@example.com,,0.0,{},Clientes,Usuarios
+Sara,sara.carson18@example.com,Sarasara.carson18@example.com,,0.0,{},Clientes,Usuarios
+Jennifer,jennifer.dunn19@example.com,Jenniferjennifer.dunn19@example.com,,0.0,{},Clientes,Usuarios
+Christine,christine.floyd20@example.com,Christinechristine.floyd20@example.com,Christinauser62@example.com,70.76923076923076,"{'first_name': 'Christina', 'email': 'user62@example.com'}",Clientes,Usuarios

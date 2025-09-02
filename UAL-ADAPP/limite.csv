@@ -1,0 +1,6 @@
+nombre,email,match_query,match_result,score,match_result_values,sourceTable,destTable
+Janet,janet.norris1@example.com,Janetjanet.norris1@example.com,,0.0,{},Clientes,Usuarios
+Michael,michael.jones2@example.com,Michaelmichael.jones2@example.com,Michelleuser11@example.com,71.1864406779661,"{'first_name': 'Michelle', 'email': 'user11@example.com'}",Clientes,Usuarios
+Donna,donna.nelson3@example.com,Donnadonna.nelson3@example.com,,0.0,{},Clientes,Usuarios
+Gregory,gregory.gross4@example.com,Gregorygregory.gross4@example.com,Gregoryuser74@example.com,75.86206896551724,"{'first_name': 'Gregory', 'email': 'user74@example.com'}",Clientes,Usuarios
+Herbert,herbert.davis5@example.com,Herbertherbert.davis5@example.com,Herbertuser162@example.com,71.1864406779661,"{'first_name': 'Herbert', 'email': 'user162@example.com'}",Clientes,Usuarios

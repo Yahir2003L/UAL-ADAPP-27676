@@ -1,0 +1,4 @@
+nombre,email,match_query,match_result,score,match_result_values,sourceTable,destTable
+Janet,janet.norris1@example.com,Janetjanet.norris1@example.com,,0.0,{},Clientes,Usuarios
+Michael,michael.jones2@example.com,Michaelmichael.jones2@example.com,Michelleuser11@example.com,71.1864406779661,"{'first_name': 'Michelle', 'email': 'user11@example.com'}",Clientes,Usuarios
+Donna,donna.nelson3@example.com,Donnadonna.nelson3@example.com,,0.0,{},Clientes,Usuarios
