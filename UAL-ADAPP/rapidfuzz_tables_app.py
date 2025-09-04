@@ -1,6 +1,7 @@
 from db_fuzzy_match import connect_to_db, fuzzy_match, execute_dynamic_matching
 import pandas as pd
 import os
+import sqlalchemy
 
 def display_results(results, formato="dataframe"):
     if not results:
@@ -10,8 +11,9 @@ def display_results(results, formato="dataframe"):
     df = pd.DataFrame(results)
 
     if "score" in df.columns:
-        df["score"] = df["score"] * 100
-        df["score"] = df["score"].round(2).astype(str) + "%"
+        if df["score"].max() <= 1.0:
+            df["score"] = df["score"] * 100
+        df["score"] = df["score"].round(2)
 
     if "nombre" in df.columns and "apellido" in df.columns:
         df["nombre_completo"] = df["nombre"] + " " + df["apellido"]
@@ -55,57 +57,113 @@ def display_results(results, formato="dataframe"):
             print("Error al seleccionar las columnas. Verifica los nombres ingresados.")
             return df  
 
-def export_results(results, selected_df):
-    if not results:
+
+def separate_matched_records(df):
+    if "score" not in df.columns:
+        print("No se encontró la columna 'score'.")
+        return None, None
+
+    if df["score"].dtype == object and "%" in str(df["score"].iloc[0]):
+        df["score"] = df["score"].str.replace("%", "").astype(float)
+
+    matched = df[df["score"] >= 97]
+    unmatched = df[df["score"] < 97]
+
+    print(f"Registros coincidentes (score >= 97): {len(matched)}")
+    print(f"Registros no coincidentes (score < 97): {len(unmatched)}")
+
+    return matched, unmatched
+
+
+def export_results_interactivo(df):
+    if df is None or df.empty:
         print("No hay resultados para exportar. La exportación ha sido cancelada.")
         return
 
-    if selected_df is None:
-        print("No se seleccionaron columnas para exportar. Operación cancelada.")
+    export = input("¿Deseas exportar los resultados? (sí/no): ").strip().lower()
+    if export not in ["si", "s"]:
+        print("Exportación cancelada.")
         return
 
-    export = input("¿Deseas exportar los resultados? (sí/no): ").strip().lower()
-    if export in ["si", "s"]:
-        try:
-            limit_rows = input("¿Deseas limitar el número de filas exportadas? (sí/no): ").strip().lower()
-            if limit_rows in ["si", "s"]:
-                max_rows = int(input("Introduce el número máximo de filas a exportar: ").strip())
-                if max_rows == 0:
-                    print("El número máximo de filas no puede ser 0. La exportación ha sido cancelada.")
-                    return
-                selected_df = selected_df[:max_rows]
+    try:
+        limit_rows = input("¿Deseas limitar el número de filas exportadas? (sí/no): ").strip().lower()
+        if limit_rows in ["si", "s"]:
+            max_rows = int(input("Introduce el número máximo de filas a exportar: ").strip())
+            if max_rows <= 0:
+                print("El número máximo de filas debe ser mayor que 0. Cancelando exportación.")
+                return
+            df = df[:max_rows]
 
-            file_format = input("¿En qué formato deseas exportar los resultados? (csv/xlsx): ").strip().lower()
-            filename = input("Introduce el nombre del archivo (con ruta opcional, sin extensión): ").strip()
-            
-            folder = os.path.dirname(filename)
-            if folder:
-                if not os.path.exists(folder):
-                    os.makedirs(folder)
-                    print(f"Carpeta creada: {folder}")
-            else:
-                folder = os.getcwd()
+        file_format = input("¿En qué formato deseas exportar los resultados? (csv/xlsx): ").strip().lower()
+        filename = input("Introduce el nombre del archivo (sin extensión): ").strip()
 
-            if file_format == "csv":
-                if selected_df.empty:
-                    print("El archivo CSV no puede ser creado porque los resultados están vacíos.")
-                    return
-                selected_df.to_csv(f"{filename}.csv", index=False, encoding="utf-8")
-                print(f"Resultados exportados exitosamente a '{filename}.csv'.")
-            elif file_format == "xlsx":
-                if selected_df.empty:
-                    print("El archivo Excel no puede ser creado porque los resultados están vacíos.")
-                    return
-                selected_df.to_excel(f"{filename}.xlsx", index=False, engine="openpyxl")
-                print(f"Resultados exportados exitosamente a '{filename}.xlsx'.")
-            else:
-                print("Formato no válido. Usa 'csv' o 'xlsx'.")
-        except ValueError:
-            print("El número máximo de filas debe ser un número entero.")
-        except Exception as e:
-            print(f"Error al exportar los resultados: {e}")
-    else:
-        print("Exportación cancelada.")
+        folder = "exportaciones"
+        os.makedirs(folder, exist_ok=True)
+        file_path = os.path.join(folder, f"{filename}.{file_format}")
+
+        if file_format == "csv":
+            df.to_csv(file_path, index=False, encoding="utf-8")
+        elif file_format == "xlsx":
+            df.to_excel(file_path, index=False, engine="openpyxl")
+        else:
+            print("Formato no válido. Usa 'csv' o 'xlsx'.")
+            return
+
+        print(f"Resultados exportados exitosamente a '{file_path}'.")
+    except ValueError:
+        print("El número máximo de filas debe ser un número entero.")
+    except Exception as e:
+        print(f"Error al exportar los resultados: {e}")
+
+    if df.empty:
+        print(f"No hay datos para exportar. La exportación ha sido cancelada.")
+        return
+
+    folder = "exportaciones"
+    os.makedirs(folder, exist_ok=True)
+
+    file_path = os.path.join(folder, f"{filename}.{file_format}")
+
+
+def import_file_to_dataframe():
+    filepath = input("Introduce la ruta del archivo a importar (CSV o Excel): ").strip()
+
+    if not os.path.exists(filepath):
+        print("El archivo no existe.")
+        return None
+
+    try:
+        if filepath.endswith(".csv"):
+            df = pd.read_csv(filepath)
+        elif filepath.endswith(".xlsx"):
+            df = pd.read_excel(filepath, engine="openpyxl")
+        else:
+            print("Formato de archivo no soportado.")
+            return None
+
+        print(f"Archivo importado correctamente con {len(df)} registros.")
+        return df
+    except Exception as e:
+        print(f"Error al importar archivo: {e}")
+        return None
+
+
+def insert_dataframe_to_db(df, db_params, table_name, columnas_fijas):
+    try:
+        for col in columnas_fijas:
+            if col not in df.columns:
+                df[col] = None  
+        df = df[columnas_fijas]
+
+        engine = sqlalchemy.create_engine(
+            f"mysql+pymysql://{db_params['username']}:{db_params['password']}@{db_params['server']}/{db_params['destDatabase']}"
+        )
+        df.to_sql(table_name, con=engine, if_exists='replace', index=False)
+        print(f"Datos insertados correctamente en la tabla '{table_name}'.")
+    except Exception as e:
+        print(f"Error al insertar datos en la base de datos: {e}")
+
+
 
 params_dict = {
     "db_type": "mysql",
@@ -123,7 +181,38 @@ params_dict = {
     }
 }
 
+columnas_fijas = ["nombre", "apellido", "email", "match_query", "match_result",  "score", "match_result_values", "destTable", "sourceTable"]
+nombre_tabla_fija = "datos_importados"
+
+
 resultados = execute_dynamic_matching(params_dict, score_cutoff=70)
+
+
 formato = input("Elige formato de salida (dataframe/dictionary): ").strip().lower()
 selected_df = display_results(resultados, formato=formato)
-export_results(resultados, selected_df)
+
+if selected_df is not None:
+    matched_df, unmatched_df = separate_matched_records(selected_df)
+
+    tipo_exportacion = input(
+        "¿Qué resultados deseas exportar? (1: todos, 2: solo coincidentes, 3: solo no coincidentes, otro: cancelar): "
+    ).strip()
+
+    if tipo_exportacion == "1":
+        export_results_interactivo(selected_df)
+    elif tipo_exportacion == "2":
+        export_results_interactivo(matched_df)
+    elif tipo_exportacion == "3":
+        export_results_interactivo(unmatched_df)
+    else:
+        print("Exportación cancelada.")
+
+
+
+importar = input("¿Deseas importar un archivo y cargarlo a la base de datos? (sí/no): ").strip().lower()
+if importar in ["si", "s"]:
+    imported_df = import_file_to_dataframe()
+    if imported_df is not None:
+        insert_dataframe_to_db(imported_df, params_dict, nombre_tabla_fija, columnas_fijas)
+
+
