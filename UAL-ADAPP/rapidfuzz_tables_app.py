@@ -1,7 +1,9 @@
-from db_fuzzy_match import connect_to_db, fuzzy_match, execute_dynamic_matching
-import pandas as pd
 import os
+import pandas as pd
 import sqlalchemy
+import mysql.connector
+from db_fuzzy_match import connect_to_db, fuzzy_match, execute_dynamic_matching
+
 
 def display_results(results, formato="dataframe"):
     if not results:
@@ -115,15 +117,6 @@ def export_results_interactivo(df):
     except Exception as e:
         print(f"Error al exportar los resultados: {e}")
 
-    if df.empty:
-        print(f"No hay datos para exportar. La exportación ha sido cancelada.")
-        return
-
-    folder = "exportaciones"
-    os.makedirs(folder, exist_ok=True)
-
-    file_path = os.path.join(folder, f"{filename}.{file_format}")
-
 
 def import_file_to_dataframe():
     filepath = input("Introduce la ruta del archivo a importar (CSV o Excel): ").strip()
@@ -148,23 +141,44 @@ def import_file_to_dataframe():
         return None
 
 
-def insert_dataframe_to_db(df, db_params, table_name, columnas_fijas):
+def insert_dataframe_with_sp(df, db_params, proc_name="InsertMatchedRecord"):
     try:
-        for col in columnas_fijas:
-            if col not in df.columns:
-                df[col] = None  
-        df = df[columnas_fijas]
-
-        engine = sqlalchemy.create_engine(
-            f"mysql+pymysql://{db_params['username']}:{db_params['password']}@{db_params['server']}/{db_params['destDatabase']}"
+        connection = mysql.connector.connect(
+            host=db_params["server"],
+            user=db_params["username"],
+            password=db_params["password"],
+            database=db_params["destDatabase"]
         )
-        df.to_sql(table_name, con=engine, if_exists='replace', index=False)
-        print(f"Datos insertados correctamente en la tabla '{table_name}'.")
+        cursor = connection.cursor()
+
+        for _, row in df.iterrows():
+            args = (
+                row.get("nombre"),
+                row.get("apellido"),
+                row.get("email"),
+                row.get("match_query"),
+                row.get("match_result"),
+                float(row.get("score", 0)) if row.get("score") else 0,
+                row.get("match_result_values"),
+                row.get("destTable"),
+                row.get("sourceTable")
+            )
+            cursor.callproc(proc_name, args)
+
+        connection.commit()
+        print(f"Se insertaron {len(df)} registros usando el procedimiento almacenado.")
     except Exception as e:
-        print(f"Error al insertar datos en la base de datos: {e}")
+        print(f"Error al ejecutar procedimiento almacenado: {e}")
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
 
 
-
+# =====================
+# MAIN
+# =====================
 params_dict = {
     "db_type": "mysql",
     "server": "localhost",
@@ -184,9 +198,7 @@ params_dict = {
 columnas_fijas = ["nombre", "apellido", "email", "match_query", "match_result",  "score", "match_result_values", "destTable", "sourceTable"]
 nombre_tabla_fija = "datos_importados"
 
-
 resultados = execute_dynamic_matching(params_dict, score_cutoff=70)
-
 
 formato = input("Elige formato de salida (dataframe/dictionary): ").strip().lower()
 selected_df = display_results(resultados, formato=formato)
@@ -207,12 +219,8 @@ if selected_df is not None:
     else:
         print("Exportación cancelada.")
 
-
-
 importar = input("¿Deseas importar un archivo y cargarlo a la base de datos? (sí/no): ").strip().lower()
 if importar in ["si", "s"]:
     imported_df = import_file_to_dataframe()
     if imported_df is not None:
-        insert_dataframe_to_db(imported_df, params_dict, nombre_tabla_fija, columnas_fijas)
-
-
+        insert_dataframe_with_sp(imported_df, params_dict)
